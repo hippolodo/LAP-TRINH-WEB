@@ -1,84 +1,96 @@
+<script setup>
+import { useAuthStore } from '../store/auth'
+import CustomerDashboard from '../features/dashboard/CustomerDashboard.vue'
+
+const authStore = useAuthStore()
+</script>
+
 <template>
   <div class="home-container">
-    <!-- Hero Section -->
-    <header class="hero">
-      <div class="hero-content">
-        <h1>Bảo vệ sức khỏe cho bạn và người thân</h1>
-        <p class="subtitle">
-          Hệ thống Quản lý Tiêm chủng VaxCenter giúp bạn theo dõi lịch tiêm, 
-          đặt lịch nhanh chóng và lưu trữ hồ sơ tiêm chủng an toàn.
-        </p>
-        <div class="hero-actions">
-          <router-link to="/register" class="btn btn-primary">Đăng ký ngay</router-link>
-          <router-link to="/login" class="btn btn-outline">Tìm hiểu thêm</router-link>
-        </div>
-      </div>
-      <div class="hero-image">
-        <div class="image-placeholder">
-          <span class="placeholder-icon">🛡️</span>
-        </div>
-      </div>
-    </header>
+    <!-- Authenticated View: Customer Dashboard -->
+    <template v-if="authStore.isAuthenticated">
+      <CustomerDashboard />
+    </template>
 
-    <!-- Features Section -->
-    <section class="features">
-      <div class="section-title">
-        <h2>Dịch vụ của chúng tôi</h2>
-        <p>Chúng tôi cung cấp các giải pháp quản lý tiêm chủng hiện đại</p>
-      </div>
-
-      <div class="feature-grid">
-        <div class="feature-card">
-          <div class="feature-icon">📅</div>
-          <h3>Đặt lịch trực tuyến</h3>
-          <p>Dễ dàng đặt lịch tiêm chủng tại các trung tâm gần bạn nhất chỉ với vài thao tác.</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">🔔</div>
-          <h3>Nhắc lịch tiêm</h3>
-          <p>Nhận thông báo nhắc nhở về các mũi tiêm sắp tới để không bao giờ bỏ lỡ.</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">📜</div>
-          <h3>Hồ sơ điện tử</h3>
-          <p>Lưu trữ và tra cứu lịch sử tiêm chủng của bạn và gia đình mọi lúc mọi nơi.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- About Section -->
-    <section class="about">
-      <div class="about-container">
-        <div class="about-text">
-          <h2>Về VaxCenter</h2>
-          <p>
-            VaxCenter là nền tảng quản lý tiêm chủng hàng đầu, được thiết kế để kết nối người dân 
-            với các dịch vụ y tế một cách thuận tiện và hiệu quả nhất.
+    <!-- Guest View: Landing Page -->
+    <template v-else>
+      <!-- Hero Section -->
+      <header class="hero">
+        <div class="hero-content">
+          <h1>Bảo vệ sức khỏe cho bạn và người thân</h1>
+          <p class="subtitle">
+            Hệ thống Quản lý Tiêm chủng VaxCenter giúp bạn theo dõi lịch tiêm, 
+            đặt lịch nhanh chóng và lưu trữ hồ sơ tiêm chủng an toàn.
           </p>
-          <p>
-            Chúng tôi cam kết bảo mật thông tin y tế của bạn và cung cấp các dữ liệu chính xác 
-            về các loại vaccine cũng như lộ trình tiêm chủng khuyến nghị.
-          </p>
-        </div>
-        <div class="about-stats">
-          <div class="stat-item">
-            <span class="stat-number">1M+</span>
-            <span class="stat-label">Người dùng</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number">500+</span>
-            <span class="stat-label">Trung tâm đối tác</span>
+          <div class="hero-actions">
+            <router-link to="/register" class="btn btn-primary">Đăng ký ngay</router-link>
+            <router-link to="/login" class="btn btn-outline">Tìm hiểu thêm</router-link>
           </div>
         </div>
-      </div>
-    </section>
+        <div class="hero-image">
+          <div class="image-placeholder">
+            <span class="placeholder-icon">🛡️</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Features Section -->
+      <section class="features">
+        <div class="section-title">
+          <h2>Dịch vụ của chúng tôi</h2>
+          <p>Chúng tôi cung cấp các giải pháp quản lý tiêm chủng hiện đại</p>
+        </div>
+
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-icon">📅</div>
+            <h3>Đặt lịch trực tuyến</h3>
+            <p>Dễ dàng đặt lịch tiêm chủng tại các trung tâm gần bạn nhất chỉ với vài thao tác.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">🔔</div>
+            <h3>Nhắc lịch tiêm</h3>
+            <p>Nhận thông báo nhắc nhở về các mũi tiêm sắp tới để không bao giờ bỏ lỡ.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">📜</div>
+            <h3>Hồ sơ điện tử</h3>
+            <p>Lưu trữ và tra cứu lịch sử tiêm chủng của bạn và gia đình mọi lúc mọi nơi.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- About Section -->
+      <section class="about">
+        <div class="about-container">
+          <div class="about-text">
+            <h2>Về VaxCenter</h2>
+            <p>
+              VaxCenter là nền tảng quản lý tiêm chủng hàng đầu, được thiết kế để kết nối người dân 
+              với các dịch vụ y tế một cách thuận tiện và hiệu quả nhất.
+            </p>
+            <p>
+              Chúng tôi cam kết bảo mật thông tin y tế của bạn và cung cấp các dữ liệu chính xác 
+              về các loại vaccine cũng như lộ trình tiêm chủng khuyến nghị.
+            </p>
+          </div>
+          <div class="about-stats">
+            <div class="stat-item">
+              <span class="stat-number">1M+</span>
+              <span class="stat-label">Người dùng</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">500+</span>
+              <span class="stat-label">Trung tâm đối tác</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </template>
   </div>
 </template>
-
-<script setup>
-</script>
 
 <style scoped>
 .home-container {

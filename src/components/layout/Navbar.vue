@@ -1,3 +1,17 @@
+<script setup>
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../../store/auth'
+
+const router = useRouter()
+const authStore = useAuthStore()
+
+const handleLogout = () => {
+  authStore.logout()
+  alert('Đã đăng xuất thành công!')
+  router.push('/login')
+}
+</script>
+
 <template>
   <nav class="navbar">
     <div class="navbar-container">
@@ -7,8 +21,16 @@
       </router-link>
 
       <div class="nav-links">
-        <router-link to="/login" class="nav-item login-btn">Đăng nhập</router-link>
-        <router-link to="/register" class="nav-item register-btn">Đăng ký</router-link>
+        <template v-if="!authStore.isAuthenticated">
+          <router-link to="/login" class="nav-item login-btn">Đăng nhập</router-link>
+          <router-link to="/register" class="nav-item register-btn">Đăng ký</router-link>
+        </template>
+        <template v-else>
+          <span class="user-welcome">Chào, {{ authStore.user?.name }}</span>
+          <router-link to="/my-appointments" class="nav-item">Lịch hẹn</router-link>
+          <router-link to="/profile" class="nav-item">Hồ sơ</router-link>
+          <button @click="handleLogout" class="nav-item logout-btn">Đăng xuất</button>
+        </template>
       </div>
     </div>
   </nav>
@@ -61,6 +83,20 @@
   border-radius: 6px;
   font-weight: 500;
   transition: all 0.3s ease;
+  color: #2c3e50;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.nav-item:hover {
+  color: #137fec;
+}
+
+.user-welcome {
+  font-weight: 600;
+  color: #137fec;
 }
 
 .login-btn {
@@ -70,6 +106,7 @@
 
 .login-btn:hover {
   background-color: #f8f9fa;
+  color: #137fec;
 }
 
 .register-btn {
@@ -81,6 +118,16 @@
 .register-btn:hover {
   background-color: #0b68c5;
   border-color: #0b68c5;
+  color: white;
+}
+
+.logout-btn {
+  color: #dc3545;
+}
+
+.logout-btn:hover {
+  background-color: #fff5f5;
+  color: #c82333;
 }
 
 @media (max-width: 600px) {
@@ -89,6 +136,13 @@
   }
   .logo-text {
     display: none;
+  }
+  .nav-links {
+    gap: 8px;
+  }
+  .nav-item {
+    padding: 8px 12px;
+    font-size: 14px;
   }
 }
 </style>

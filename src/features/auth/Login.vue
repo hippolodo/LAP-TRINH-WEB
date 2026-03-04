@@ -1,13 +1,30 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../../store/auth'
+
+const router = useRouter()
+const authStore = useAuthStore()
 
 const email = ref('')
 const password = ref('')
 
 const handleLogin = () => {
   console.log('Đăng nhập với:', { email: email.value, password: password.value })
-  alert(`Đang đăng nhập với email: ${email.value}`)
-  // Tại đây bạn sẽ gọi API từ authApi.js
+  
+  // Mock login: always succeed for now
+  const mockUser = {
+    id: 1,
+    name: 'Khách hàng',
+    email: email.value,
+    role: 'customer'
+  }
+  const mockToken = 'mock-jwt-token'
+  
+  authStore.login(mockUser, mockToken)
+  
+  alert(`Đăng nhập thành công! Chào mừng ${mockUser.name}`)
+  router.push('/')
 }
 </script>
 
