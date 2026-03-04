@@ -9,7 +9,7 @@ import Navbar from './components/layout/Navbar.vue'
       <router-view />
     </main>
     <footer class="footer">
-      <p>&copy; 2024 VaxCenter - Hệ thống Quản lý Tiêm chủng</p>
+      <p>&copy; 2026 VaxCenter - Hệ thống Quản lý Tiêm chủng</p>
     </footer>
   </div>
 </template>
@@ -43,10 +43,10 @@ body {
 
 .footer {
   text-align: center;
-  padding: 32px;
+  padding: 16px;
   background-color: #ffffff;
-  border-top: 1px solid #eee;
-  color: #6c757d;
-  font-size: 14.4px;
+  border-top: 1px solid #f1f5f9;
+  color: #94a3b8;
+  font-size: 13px;
 }
 </style>

@@ -2,6 +2,7 @@
 import { useAuthStore } from '../store/auth'
 import CustomerDashboard from '../features/dashboard/CustomerDashboard.vue'
 import StaffDashboard from '../features/dashboard/StaffDashboard.vue'
+import AdminDashboard from '../features/admin/AdminDashboard.vue'
 
 const authStore = useAuthStore()
 </script>
@@ -10,7 +11,8 @@ const authStore = useAuthStore()
   <div class="home-container">
     <!-- Authenticated View -->
     <template v-if="authStore.isAuthenticated">
-      <StaffDashboard v-if="authStore.user?.role === 'staff'" />
+      <AdminDashboard v-if="authStore.user?.role === 'admin'" />
+      <StaffDashboard v-else-if="authStore.user?.role === 'staff'" />
       <CustomerDashboard v-else />
     </template>
 

@@ -15,16 +15,32 @@ const handleLogout = () => {
 <template>
   <nav class="navbar">
     <div class="navbar-container">
+      <!-- 1. Logo bên trái -->
       <router-link to="/" class="logo">
         <span class="logo-icon">💉</span>
         <span class="logo-text">VaxCenter</span>
       </router-link>
 
+      <!-- 2. Câu chào dịch sang trái -->
+      <span v-if="authStore.isAuthenticated" class="user-welcome">
+        Chào, {{ authStore.user?.name }} ({{ authStore.user?.role?.toUpperCase() }})
+      </span>
+
+      <!-- 3. Các link điều hướng đẩy về bên phải -->
       <div class="nav-links">
-        <template v-if="authStore.user?.role === 'staff'">
+        <!-- Links for Admin -->
+        <template v-if="authStore.user?.role === 'admin'">
+          <router-link to="/" class="nav-item">Bảng quản trị</router-link>
+          <router-link to="/products" class="nav-item">Kho vaccine</router-link>
+        </template>
+        
+        <!-- Links for Staff -->
+        <template v-else-if="authStore.user?.role === 'staff'">
           <router-link to="/" class="nav-item">Bảng điều khiển</router-link>
           <router-link to="/products" class="nav-item">Kho dược</router-link>
         </template>
+        
+        <!-- Links for Customer/Guest -->
         <template v-else>
           <router-link to="/products" class="nav-item">Tra cứu Vaccine</router-link>
         </template>
@@ -34,15 +50,13 @@ const handleLogout = () => {
           <router-link to="/register" class="nav-item register-btn">Đăng ký</router-link>
         </template>
         <template v-else>
-          <span class="user-welcome">Chào, {{ authStore.user?.name }}</span>
-          <template v-if="authStore.user?.role !== 'staff'">
+          <template v-if="authStore.user?.role === 'customer'">
             <router-link to="/my-appointments" class="nav-item">Lịch hẹn</router-link>
           </template>
           <router-link to="/profile" class="nav-item">Hồ sơ</router-link>
           <button @click="handleLogout" class="nav-item logout-btn">Đăng xuất</button>
         </template>
       </div>
-
     </div>
   </nav>
 </template>
@@ -63,6 +77,7 @@ const handleLogout = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 24px;
 }
 
 .logo {
@@ -70,6 +85,7 @@ const handleLogout = () => {
   align-items: center;
   text-decoration: none;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .logo-icon {
@@ -82,53 +98,51 @@ const handleLogout = () => {
   color: #2c3e50;
 }
 
+.user-welcome {
+  font-weight: 600;
+  color: #137fec;
+  margin-right: auto; /* Đẩy nav-links sang bên phải */
+  font-size: 16px;
+  padding-left: 12px;
+  border-left: 2px solid #e2e8f0;
+}
+
 .nav-links {
   display: flex;
-  gap: 16px;
+  gap: 8px;
   align-items: center;
 }
 
 .nav-item {
   text-decoration: none;
-  padding: 8px 19.2px;
-  border-radius: 6px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  color: #2c3e50;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s;
+  color: #475569;
   border: none;
   background: none;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 15px;
 }
 
 .nav-item:hover {
   color: #137fec;
-}
-
-.user-welcome {
-  font-weight: 600;
-  color: #137fec;
+  background-color: #f1f5f9;
 }
 
 .login-btn {
-  color: #2c3e50;
-  border: 1px solid #2c3e50;
-}
-
-.login-btn:hover {
-  background-color: #f8f9fa;
   color: #137fec;
+  border: 1px solid #137fec;
 }
 
 .register-btn {
   background-color: #137fec;
   color: white;
-  border: 1px solid #137fec;
 }
 
 .register-btn:hover {
   background-color: #0b68c5;
-  border-color: #0b68c5;
   color: white;
 }
 
@@ -141,19 +155,19 @@ const handleLogout = () => {
   color: #c82333;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .navbar {
     padding: 16px;
   }
-  .logo-text {
-    display: none;
+  .logo-text, .user-welcome {
+    display: none; /* Ẩn câu chào trên mobile để tránh chật chội */
   }
   .nav-links {
-    gap: 8px;
+    gap: 4px;
   }
   .nav-item {
-    padding: 8px 12px;
-    font-size: 14px;
+    padding: 8px;
+    font-size: 13px;
   }
 }
 </style>

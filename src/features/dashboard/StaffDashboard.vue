@@ -34,14 +34,6 @@ const vaccineOptions = [
   { id: 7, name: 'Vaccine HPV' }
 ]
 
-const centerOptions = [
-  'VaxCenter Quận 1',
-  'VaxCenter Quận 3',
-  'VaxCenter Quận 7',
-  'VaxCenter Bình Thạnh',
-  'VaxCenter Thủ Đức'
-]
-
 // Modal Chi tiết
 const selectedAppointment = ref(null)
 const showDetailModal = ref(false)
@@ -53,7 +45,7 @@ const newRecord = ref({
   age: '',
   gender: 'Nam',
   vaccine: vaccineOptions[0].name,
-  center: staffLocation, // Mặc định là cơ sở của Staff
+  center: staffLocation,
   date: new Date().toISOString().split('T')[0],
   shift: 'Sáng'
 })
@@ -138,10 +130,10 @@ const vaccineInventory = [
       <div class="header-content">
         <h1>Bảng điều khiển Nhân viên</h1>
         <p>Cơ sở làm việc: <strong>{{ staffLocation }}</strong></p>
-        <p>Chào bác sĩ, <strong>{{ authStore.user?.name }}</strong>. Chúc bạn một ngày làm việc hiệu quả!</p>
+        <p>Chào <strong>{{ authStore.user?.name }}</strong>. Chúc bạn một ngày làm việc hiệu quả!</p>
       </div>
       <div class="header-actions">
-        <button @click="openCreateModal" class="btn btn-primary">+ Tạo phiếu tiêm mới</button>
+        <button @click="openCreateModal" class="btn btn-create">+ Tạo phiếu tiêm mới</button>
       </div>
     </header>
 
@@ -242,7 +234,6 @@ const vaccineInventory = [
         </div>
         <div class="modal-body">
           <form @submit.prevent="handleCreateRecord" class="create-form">
-            <!-- Step 1: Patient Info -->
             <div class="form-section-label">1. Thông tin người tiêm</div>
             <div class="form-row">
               <div class="form-group flex-2">
@@ -263,7 +254,6 @@ const vaccineInventory = [
               </div>
             </div>
 
-            <!-- Step 2 & 3: Vaccine & Center -->
             <div class="form-section-label">2. Dịch vụ & Địa điểm</div>
             <div class="form-row">
               <div class="form-group">
@@ -279,8 +269,7 @@ const vaccineInventory = [
                 </select>
               </div>
             </div>
-
-            <!-- Step 4 & 5: Date & Shift -->
+            
             <div class="form-section-label">3. Thời gian tiêm</div>
             <div class="form-row">
               <div class="form-group">
@@ -303,7 +292,7 @@ const vaccineInventory = [
         </div>
         <div class="modal-footer">
           <button @click="showCreateModal = false" class="btn btn-secondary">Hủy</button>
-          <button @click="handleCreateRecord" class="btn btn-primary">Lưu phiếu tiêm</button>
+          <button @click="handleCreateRecord" class="btn btn-submit-form">Lưu phiếu tiêm</button>
         </div>
       </div>
     </div>
@@ -384,21 +373,42 @@ const vaccineInventory = [
   justify-content: space-between;
   align-items: center;
   margin-bottom: 32px;
-  background: white;
-  padding: 32px;
-  border-radius: 16px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #137fec 0%, #0b68c5 100%);
+  color: white;
+  padding: 32px 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(19, 127, 236, 0.2);
 }
 
 .staff-header h1 {
   font-size: 28px;
-  color: #1e293b;
+  color: white;
   margin-bottom: 8px;
 }
 
 .staff-header p {
-  color: #64748b;
+  color: rgba(255, 255, 255, 0.9);
   margin-bottom: 4px;
+}
+
+.staff-header strong {
+  color: white;
+}
+
+.btn-create {
+  background-color: white;
+  color: #137fec;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-create:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .dashboard-grid {
@@ -543,7 +553,7 @@ const vaccineInventory = [
   text-align: center;
 }
 
-.btn-primary {
+.btn-submit-form {
   background-color: #137fec;
   color: white;
   border: none;

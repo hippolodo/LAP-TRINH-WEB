@@ -13,14 +13,18 @@ const handleLogin = () => {
   console.log('Đăng nhập với:', { email: email.value, password: password.value })
   
   // Mock login logic:
-  // If email contains 'staff' or 'doctor', login as staff
   const isStaff = email.value.includes('staff') || email.value.includes('doctor')
+  const isAdmin = email.value.includes('admin')
+  
+  let role = 'customer'
+  if (isAdmin) role = 'admin'
+  else if (isStaff) role = 'staff'
   
   const mockUser = {
-    id: isStaff ? 99 : 1,
-    name: isStaff ? 'Bác sĩ Minh' : 'Nguyễn Văn A',
+    id: isAdmin ? 999 : (isStaff ? 99 : 1),
+    name: isAdmin ? 'Quản trị hệ thống' : (isStaff ? 'Bác sĩ Minh' : 'Nguyễn Văn A'),
     email: email.value,
-    role: isStaff ? 'staff' : 'customer',
+    role: role,
     workLocation: isStaff ? 'VaxCenter Quận 1' : null
   }
   const mockToken = 'mock-jwt-token'
