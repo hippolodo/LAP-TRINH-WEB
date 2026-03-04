@@ -1,45 +1,51 @@
 <script setup>
 import { ref, computed, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '../../store/auth'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 // Mock Data
 const vaccines = [
-  { id: 1, name: 'Vaccine Cúm Tứ giá (Hà Lan)', price: 350000 },
-  { id: 2, name: 'Vaccine Phế cầu (Bỉ)', price: 1290000 },
-  { id: 3, name: 'Vaccine HPV (Mỹ)', price: 1790000 },
-  { id: 4, name: 'Vaccine Viêm não Nhật Bản', price: 250000 },
-  { id: 5, name: 'Vaccine Thủy đậu', price: 750000 }
+  { id: 1, name: 'Vaccine 6 trong 1 (Infanrix Hexa)', price: 1015000 },
+  { id: 2, name: 'Vaccine Phế cầu (Synflorix)', price: 1045000 },
+  { id: 3, name: 'Vaccine Sởi - Quai bị - Rubella', price: 300000 },
+  { id: 4, name: 'Vaccine Thủy đậu', price: 915000 },
+  { id: 5, name: 'Vaccine Viêm não Nhật Bản', price: 670000 },
+  { id: 6, name: 'Vaccine Cúm (Vaxigrip Tetra)', price: 350000 },
+  { id: 7, name: 'Vaccine HPV', price: 1790000 }
 ]
 
 const locations = [
   { id: 1, name: 'VaxCenter Quận 1', address: '123 Nguyễn Huệ, Quận 1' },
-  { id: 2, name: 'VaxCenter Quận 7', address: '456 Nguyễn Văn Linh, Quận 7' },
-  { id: 3, name: 'VaxCenter Thủ Đức', address: '789 Võ Văn Ngân, Thủ Đức' }
+  { id: 2, name: 'VaxCenter Quận 3', address: '789 Võ Văn Ngân, Quận 3' },
+  { id: 3, name: 'VaxCenter Quận 7', address: '456 Nguyễn Văn Linh, Quận 7' },
+  { id: 4, name: 'VaxCenter Bình Thạnh', address: '159 Xô Viết Nghệ Tĩnh, Bình Thạnh' },
+  { id: 5, name: 'VaxCenter Thủ Đức', address: '789 Võ Văn Ngân, Thủ Đức' }
 ]
-
-// Slot Management Logic
-// For simplicity, we'll mock the current occupancy
-const getMockSlots = (locationId, date) => {
-  // Each session has 50 max slots
-  return {
-    morning: { occupied: Math.floor(Math.random() * 51), label: 'Sáng (07:30 - 11:30)' },
-    afternoon: { occupied: Math.floor(Math.random() * 51), label: 'Chiều (13:30 - 17:30)' }
-  }
-}
 
 // Form State
 const bookingForm = reactive({
+  patientName: authStore.user?.name || '',
+  age: '',
+  gender: 'Nam',
   vaccineId: null,
   locationId: null,
   date: '',
   session: '' // 'morning' or 'afternoon'
 })
 
+// Slot Management Logic
+const getMockSlots = (locationId, date) => {
+  return {
+    morning: { occupied: Math.floor(Math.random() * 51), label: 'Sáng (07:30 - 11:30)' },
+    afternoon: { occupied: Math.floor(Math.random() * 51), label: 'Chiều (13:30 - 17:30)' }
+  }
+}
+
 const currentSlots = ref(null)
 
-// Actions
 const handleDateChange = () => {
   if (bookingForm.locationId && bookingForm.date) {
     currentSlots.value = getMockSlots(bookingForm.locationId, bookingForm.date)
@@ -54,13 +60,12 @@ const handleLocationChange = () => {
 
 const isSubmitting = ref(false)
 const submitBooking = () => {
-  if (!bookingForm.vaccineId || !bookingForm.locationId || !bookingForm.date || !bookingForm.session) {
+  if (!bookingForm.patientName || !bookingForm.age || !bookingForm.vaccineId || !bookingForm.locationId || !bookingForm.date || !bookingForm.session) {
     alert('Vui lòng điền đầy đủ thông tin!')
     return
   }
   
   isSubmitting.value = true
-  // Mock API Call
   setTimeout(() => {
     isSubmitting.value = false
     alert('Đặt lịch thành công! Mã số lịch hẹn của bạn là: VC' + Math.floor(Math.random() * 100000))
@@ -78,40 +83,59 @@ const selectedLocation = computed(() => locations.find(l => l.id === bookingForm
     <div class="booking-card">
       <header class="booking-header">
         <h2>Đặt Lịch Tiêm Chủng</h2>
-        <p>Chọn dịch vụ và thời gian phù hợp với bạn</p>
+        <p>Hệ thống đăng ký tiêm chủng trực tuyến VaxCenter</p>
       </header>
 
       <form @submit.prevent="submitBooking" class="booking-form">
-        <!-- 1. Chọn Vaccine -->
+        <!-- 1. Thông tin người tiêm -->
         <div class="form-section">
-          <label><span class="step-num">1</span> Chọn loại Vaccine</label>
-          <div class="select-wrapper">
-            <select v-model="bookingForm.vaccineId" required>
-              <option :value="null" disabled>-- Chọn Vaccine --</option>
-              <option v-for="vax in vaccines" :key="vax.id" :value="vax.id">
-                {{ vax.name }} - {{ vax.price.toLocaleString() }}đ
-              </option>
-            </select>
+          <label><span class="step-num">1</span> Thông tin người tiêm</label>
+          <div class="form-grid">
+            <div class="input-group">
+              <input type="text" v-model="bookingForm.patientName" placeholder="Họ tên người tiêm" required />
+            </div>
+            <div class="input-row">
+              <input type="number" v-model="bookingForm.age" placeholder="Tuổi" required />
+              <select v-model="bookingForm.gender" required>
+                <option value="Nam">Nam</option>
+                <option value="Nữ">Nữ</option>
+                <option value="Khác">Khác</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <!-- 2. Chọn Địa điểm -->
-        <div class="form-section">
-          <label><span class="step-num">2</span> Chọn trung tâm tiêm chủng</label>
-          <div class="select-wrapper">
-            <select v-model="bookingForm.locationId" @change="handleLocationChange" required>
-              <option :value="null" disabled>-- Chọn Địa điểm --</option>
-              <option v-for="loc in locations" :key="loc.id" :value="loc.id">
-                {{ loc.name }} ({{ loc.address }})
-              </option>
-            </select>
+        <!-- 2. Chọn Vaccine & Địa điểm -->
+        <div class="form-grid">
+          <div class="form-section">
+            <label><span class="step-num">2</span> Chọn loại Vaccine</label>
+            <div class="select-wrapper">
+              <select v-model="bookingForm.vaccineId" required>
+                <option :value="null" disabled>-- Chọn Vaccine --</option>
+                <option v-for="vax in vaccines" :key="vax.id" :value="vax.id">
+                  {{ vax.name }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <label><span class="step-num">3</span> Chọn trung tâm</label>
+            <div class="select-wrapper">
+              <select v-model="bookingForm.locationId" @change="handleLocationChange" required>
+                <option :value="null" disabled>-- Chọn trung tâm --</option>
+                <option v-for="loc in locations" :key="loc.id" :value="loc.id">
+                  {{ loc.name }}
+                </option>
+              </select>
+            </div>
           </div>
         </div>
 
         <!-- 3. Chọn Ngày & Slot -->
         <div class="form-grid">
           <div class="form-section">
-            <label><span class="step-num">3</span> Chọn ngày tiêm</label>
+            <label><span class="step-num">4</span> Chọn ngày tiêm</label>
             <input 
               type="date" 
               v-model="bookingForm.date" 
@@ -122,7 +146,7 @@ const selectedLocation = computed(() => locations.find(l => l.id === bookingForm
           </div>
 
           <div class="form-section" v-if="currentSlots">
-            <label><span class="step-num">4</span> Chọn buổi tiêm</label>
+            <label><span class="step-num">5</span> Chọn buổi tiêm</label>
             <div class="slots-grid">
               <label 
                 v-for="(slot, key) in currentSlots" 
@@ -153,12 +177,13 @@ const selectedLocation = computed(() => locations.find(l => l.id === bookingForm
 
         <!-- Summary -->
         <div class="booking-summary" v-if="selectedVaccine && selectedLocation && bookingForm.date && bookingForm.session">
-          <h3>Xác nhận thông tin</h3>
+          <h3>Xác nhận thông tin đặt lịch</h3>
           <div class="summary-details">
+            <p><strong>Họ tên:</strong> {{ bookingForm.patientName }} ({{ bookingForm.age }} tuổi - {{ bookingForm.gender }})</p>
             <p><strong>Vaccine:</strong> {{ selectedVaccine.name }}</p>
             <p><strong>Địa điểm:</strong> {{ selectedLocation.name }}</p>
             <p><strong>Thời gian:</strong> {{ bookingForm.date }} ({{ currentSlots[bookingForm.session].label }})</p>
-            <p class="total"><strong>Tổng cộng:</strong> {{ selectedVaccine.price.toLocaleString() }}đ</p>
+            <p class="total"><strong>Phí dự kiến:</strong> {{ selectedVaccine.price.toLocaleString() }}đ</p>
           </div>
         </div>
 
@@ -231,11 +256,24 @@ const selectedLocation = computed(() => locations.find(l => l.id === bookingForm
   font-size: 14px;
 }
 
-.select-wrapper {
-  position: relative;
+.input-group {
+  margin-bottom: 12px;
 }
 
-select, input[type="date"] {
+.input-row {
+  display: flex;
+  gap: 12px;
+}
+
+.input-row input {
+  flex: 1;
+}
+
+.input-row select {
+  width: 120px;
+}
+
+select, input[type="text"], input[type="number"], input[type="date"] {
   width: 100%;
   padding: 14px 20px;
   border: 2px solid #e2e8f0;
@@ -246,14 +284,14 @@ select, input[type="date"] {
   background: #f8fafc;
 }
 
-select:focus, input[type="date"]:focus {
+select:focus, input:focus {
   border-color: #137fec;
 }
 
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 32px;
+  gap: 24px;
 }
 
 /* Slots Grid */

@@ -5,6 +5,7 @@ import RegisterPage from '../pages/RegisterPage.vue'
 import AppointmentBooking from '../features/appointments/AppointmentBooking.vue'
 import AppointmentList from '../features/appointments/AppointmentList.vue'
 import ProfilePage from '../pages/ProfilePage.vue'
+import ProductList from '../features/products/ProductList.vue'
 
 const routes = [
   {
@@ -21,6 +22,11 @@ const routes = [
     path: '/register',
     name: 'Register',
     component: RegisterPage
+  },
+  {
+    path: '/products',
+    name: 'ProductList',
+    component: ProductList
   },
   {
     path: '/appointments',

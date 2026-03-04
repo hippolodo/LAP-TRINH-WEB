@@ -21,17 +21,28 @@ const handleLogout = () => {
       </router-link>
 
       <div class="nav-links">
+        <template v-if="authStore.user?.role === 'staff'">
+          <router-link to="/" class="nav-item">Bảng điều khiển</router-link>
+          <router-link to="/products" class="nav-item">Kho dược</router-link>
+        </template>
+        <template v-else>
+          <router-link to="/products" class="nav-item">Tra cứu Vaccine</router-link>
+        </template>
+
         <template v-if="!authStore.isAuthenticated">
           <router-link to="/login" class="nav-item login-btn">Đăng nhập</router-link>
           <router-link to="/register" class="nav-item register-btn">Đăng ký</router-link>
         </template>
         <template v-else>
           <span class="user-welcome">Chào, {{ authStore.user?.name }}</span>
-          <router-link to="/my-appointments" class="nav-item">Lịch hẹn</router-link>
+          <template v-if="authStore.user?.role !== 'staff'">
+            <router-link to="/my-appointments" class="nav-item">Lịch hẹn</router-link>
+          </template>
           <router-link to="/profile" class="nav-item">Hồ sơ</router-link>
           <button @click="handleLogout" class="nav-item logout-btn">Đăng xuất</button>
         </template>
       </div>
+
     </div>
   </nav>
 </template>

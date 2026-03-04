@@ -1,15 +1,17 @@
 <script setup>
 import { useAuthStore } from '../store/auth'
 import CustomerDashboard from '../features/dashboard/CustomerDashboard.vue'
+import StaffDashboard from '../features/dashboard/StaffDashboard.vue'
 
 const authStore = useAuthStore()
 </script>
 
 <template>
   <div class="home-container">
-    <!-- Authenticated View: Customer Dashboard -->
+    <!-- Authenticated View -->
     <template v-if="authStore.isAuthenticated">
-      <CustomerDashboard />
+      <StaffDashboard v-if="authStore.user?.role === 'staff'" />
+      <CustomerDashboard v-else />
     </template>
 
     <!-- Guest View: Landing Page -->

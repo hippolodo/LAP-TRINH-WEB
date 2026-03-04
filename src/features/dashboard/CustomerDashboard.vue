@@ -70,7 +70,7 @@ const recommendedVaccines = [
         <section class="section-card">
           <div class="section-header">
             <h2>Lịch sử tiêm chủng gần đây</h2>
-            <router-link to="/history" class="view-all">Xem tất cả</router-link>
+            <router-link to="/profile" class="view-all">Xem tất cả</router-link>
           </div>
           <div class="list-container">
             <div v-for="hist in recentHistory" :key="hist.id" class="list-item history">

@@ -12,18 +12,22 @@ const password = ref('')
 const handleLogin = () => {
   console.log('Đăng nhập với:', { email: email.value, password: password.value })
   
-  // Mock login: always succeed for now
+  // Mock login logic:
+  // If email contains 'staff' or 'doctor', login as staff
+  const isStaff = email.value.includes('staff') || email.value.includes('doctor')
+  
   const mockUser = {
-    id: 1,
-    name: 'Khách hàng',
+    id: isStaff ? 99 : 1,
+    name: isStaff ? 'Bác sĩ Minh' : 'Nguyễn Văn A',
     email: email.value,
-    role: 'customer'
+    role: isStaff ? 'staff' : 'customer',
+    workLocation: isStaff ? 'VaxCenter Quận 1' : null
   }
   const mockToken = 'mock-jwt-token'
   
   authStore.login(mockUser, mockToken)
   
-  alert(`Đăng nhập thành công! Chào mừng ${mockUser.name}`)
+  alert(`Đăng nhập thành công! Chào mừng ${mockUser.name} (${mockUser.role})`)
   router.push('/')
 }
 </script>
