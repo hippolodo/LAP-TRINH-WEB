@@ -17,14 +17,14 @@ const centerOptions = [
 
 // Mock data: Chi tiết tồn kho theo từng cơ sở
 const inventoryData = ref([
-  { id: 1, name: 'Vắc xin 6 trong 1 (Infanrix Hexa)', manufacturer: 'GSK (Bỉ)', price: '1.015.000 VNĐ', location: 'VaxCenter Quận 1', stock: 45, batch: 'BN-2024-001' },
-  { id: 2, name: 'Vắc xin 6 trong 1 (Infanrix Hexa)', manufacturer: 'GSK (Bỉ)', price: '1.015.000 VNĐ', location: 'VaxCenter Quận 7', stock: 20, batch: 'BN-2024-005' },
-  { id: 3, name: 'Vắc xin Phế cầu (Synflorix)', manufacturer: 'GSK (Bỉ)', price: '1.045.000 VNĐ', location: 'VaxCenter Quận 1', stock: 12, batch: 'BN-2024-082' },
-  { id: 4, name: 'Vắc xin Phế cầu (Synflorix)', manufacturer: 'GSK (Bỉ)', price: '1.045.000 VNĐ', location: 'VaxCenter Quận 3', stock: 55, batch: 'BN-2024-090' },
-  { id: 5, name: 'Vắc xin HPV', manufacturer: 'MSD (Mỹ)', price: '1.790.000 VNĐ', location: 'VaxCenter Quận 1', stock: 8, batch: 'BN-2024-112' },
-  { id: 6, name: 'Vắc xin HPV', manufacturer: 'MSD (Mỹ)', price: '1.790.000 VNĐ', location: 'VaxCenter Thủ Đức', stock: 30, batch: 'BN-2024-115' },
-  { id: 7, name: 'Vắc xin Cúm (Vaxigrip Tetra)', manufacturer: 'Sanofi Pasteur', price: '350.000 VNĐ', location: 'VaxCenter Bình Thạnh', stock: 150, batch: 'BN-2024-044' },
-  { id: 8, name: 'Vắc xin Cúm (Vaxigrip Tetra)', manufacturer: 'Sanofi Pasteur', price: '350.000 VNĐ', location: 'VaxCenter Quận 1', stock: 100, batch: 'BN-2024-045' }
+  { id: 1, name: 'Vắc xin 6 trong 1 (Infanrix Hexa)', manufacturer: 'GSK (Bỉ)', price: '1.015.000 VNĐ', location: 'VaxCenter Quận 1', stock: 45, batch: 'BN-2024-001', description: 'Phòng 6 bệnh: Bạch hầu, ho gà, uốn ván, bại liệt, viêm gan B và Hib.' },
+  { id: 2, name: 'Vắc xin 6 trong 1 (Infanrix Hexa)', manufacturer: 'GSK (Bỉ)', price: '1.015.000 VNĐ', location: 'VaxCenter Quận 7', stock: 20, batch: 'BN-2024-005', description: 'Phòng 6 bệnh: Bạch hầu, ho gà, uốn ván, bại liệt, viêm gan B và Hib.' },
+  { id: 3, name: 'Vắc xin Phế cầu (Synflorix)', manufacturer: 'GSK (Bỉ)', price: '1.045.000 VNĐ', location: 'VaxCenter Quận 1', stock: 12, batch: 'BN-2024-082', description: 'Phòng các bệnh viêm phổi, viêm màng não, viêm tai giữa do phế cầu khuẩn.' },
+  { id: 4, name: 'Vắc xin Phế cầu (Synflorix)', manufacturer: 'GSK (Bỉ)', price: '1.045.000 VNĐ', location: 'VaxCenter Quận 3', stock: 55, batch: 'BN-2024-090', description: 'Phòng các bệnh viêm phổi, viêm màng não, viêm tai giữa do phế cầu khuẩn.' },
+  { id: 5, name: 'Vắc xin HPV', manufacturer: 'MSD (Mỹ)', price: '1.790.000 VNĐ', location: 'VaxCenter Quận 1', stock: 8, batch: 'BN-2024-112', description: 'Phòng ung thư cổ tử cung, u nhú bộ phận sinh dục và các bệnh do virus HPV.' },
+  { id: 6, name: 'Vắc xin HPV', manufacturer: 'MSD (Mỹ)', price: '1.790.000 VNĐ', location: 'VaxCenter Thủ Đức', stock: 30, batch: 'BN-2024-115', description: 'Phòng ung thư cổ tử cung, u nhú bộ phận sinh dục và các bệnh do virus HPV.' },
+  { id: 7, name: 'Vắc xin Cúm (Vaxigrip Tetra)', manufacturer: 'Sanofi Pasteur', price: '350.000 VNĐ', location: 'VaxCenter Bình Thạnh', stock: 150, batch: 'BN-2024-044', description: 'Phòng bệnh cúm mùa do 4 chủng virus cúm phổ biến gây ra.' },
+  { id: 8, name: 'Vắc xin Cúm (Vaxigrip Tetra)', manufacturer: 'Sanofi Pasteur', price: '350.000 VNĐ', location: 'VaxCenter Quận 1', stock: 100, batch: 'BN-2024-045', description: 'Phòng bệnh cúm mùa do 4 chủng virus cúm phổ biến gây ra.' }
 ])
 
 const fetchInventory = async () => {
@@ -46,13 +46,26 @@ const filteredInventory = computed(() => {
   else if (isAdmin && selectedCenter.value !== 'Tất cả') {
     data = data.filter(item => item.location === selectedCenter.value)
   }
+  // Nếu là khách hàng, gộp các loại vaccine trùng tên để tránh hiển thị lặp theo cơ sở
+  else if (!isAdmin && !isStaff) {
+    const uniqueVaccines = []
+    const seenNames = new Set()
+    
+    data.forEach(item => {
+      if (!seenNames.has(item.name)) {
+        uniqueVaccines.push(item)
+        seenNames.add(item.name)
+      }
+    })
+    data = uniqueVaccines
+  }
 
   // Lọc theo từ khóa tìm kiếm
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
     data = data.filter(item => 
       item.name.toLowerCase().includes(q) || 
-      item.batch.toLowerCase().includes(q)
+      (item.batch && item.batch.toLowerCase().includes(q))
     )
   }
 
@@ -128,9 +141,11 @@ onMounted(() => {
           <tr>
             <th>Vaccine</th>
             <th v-if="isAdmin">Cơ sở</th>
-            <th>Số lô</th>
-            <th>Tồn kho</th>
-            <th>Tình trạng</th>
+            <th v-if="isAdmin || isStaff">Số lô</th>
+            <th v-if="isAdmin || isStaff">Tồn kho</th>
+            <th v-if="isAdmin || isStaff">Tình trạng</th>
+            <th v-if="!isAdmin && !isStaff">Giá</th>
+            <th v-if="!isAdmin && !isStaff">Công dụng</th>
           </tr>
         </thead>
         <tbody>
@@ -144,20 +159,26 @@ onMounted(() => {
             <td v-if="isAdmin">
               <span class="location-tag">{{ item.location }}</span>
             </td>
-            <td><code>{{ item.batch }}</code></td>
-            <td>
+            <td v-if="isAdmin || isStaff"><code>{{ item.batch }}</code></td>
+            <td v-if="isAdmin || isStaff">
               <span :class="['stock-value', item.stock < 20 ? 'danger' : '']">
                 {{ item.stock }} liều
               </span>
             </td>
-            <td>
+            <td v-if="isAdmin || isStaff">
               <div class="progress-container">
                 <div class="progress-bar" :style="{ width: Math.min(item.stock, 100) + '%', backgroundColor: item.stock < 20 ? '#ef4444' : '#10b981' }"></div>
               </div>
             </td>
+            <td v-if="!isAdmin && !isStaff" class="price-cell">
+              {{ item.price }}
+            </td>
+            <td v-if="!isAdmin && !isStaff" class="description-cell">
+              {{ item.description }}
+            </td>
           </tr>
           <tr v-if="filteredInventory.length === 0">
-            <td colspan="5" class="no-data">Không tìm thấy dữ liệu kho phù hợp.</td>
+            <td :colspan="isAdmin ? 5 : (isStaff ? 4 : 3)" class="no-data">Không tìm thấy dữ liệu phù hợp.</td>
           </tr>
         </tbody>
       </table>
@@ -243,6 +264,19 @@ onMounted(() => {
 
 .name-cell { display: flex; flex-direction: column; }
 .name-cell span { font-size: 12px; color: #94a3b8; }
+
+.description-cell {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.5;
+  max-width: 500px;
+}
+
+.price-cell {
+  font-weight: 700;
+  color: #137fec;
+  white-space: nowrap;
+}
 
 .location-tag {
   background: #eff6ff; color: #137fec; padding: 4px 10px; border-radius: 6px;

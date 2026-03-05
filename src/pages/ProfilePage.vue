@@ -12,7 +12,7 @@ const isStaff = user?.role === 'staff'
 // Mock extra data if not present in store
 const userDetails = ref({
   age: isStaff ? 38 : 25,
-  gender: isStaff ? 'Nam' : 'Nữ',
+  gender: isStaff ? 'Nam' : 'Nam',
   phone: isStaff ? '0912.345.678' : '0988.777.666',
   workLocation: isStaff ? 'VaxCenter Quận 1' : null,
   address: isStaff ? null : '123 Đường ABC, Quận 3, TP.HCM'
@@ -64,9 +64,9 @@ const handleLogout = () => {
           >
             <span class="m-icon">📘</span> Sổ tiêm chủng
           </button>
-          <button class="menu-item">
+          <!-- <button class="menu-item">
             <span class="m-icon">🛡️</span> Bảo mật & mật khẩu
-          </button>
+          </button> -->
           <button @click="handleLogout" class="menu-item logout-item">
             <span class="m-icon">🚪</span> Đăng xuất
           </button>
