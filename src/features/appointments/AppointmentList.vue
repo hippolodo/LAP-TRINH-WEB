@@ -1,10 +1,16 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useAuthStore } from '../../store/auth'
+
+const authStore = useAuthStore()
+const isStaff = computed(() => authStore.user?.role === 'staff')
+const isAdmin = computed(() => authStore.user?.role === 'admin')
 
 // Mock data for appointments
 const appointments = ref([
   { 
     id: 'VC82931', 
+    customerName: 'Nguyễn Văn A',
     vaccine: 'Vaccine Cúm Tứ giá (Hà Lan)', 
     location: 'VaxCenter Quận 1', 
     date: '2024-03-20', 
@@ -12,20 +18,24 @@ const appointments = ref([
     status: 'confirmed',
     statusLabel: 'Đã xác nhận',
     confirmedBy: 'BS. Lê Mạnh Hùng',
-    createdAt: '2024-03-01'
+    createdAt: '2024-03-01',
+    postVaccinationNotes: ''
   },
   { 
     id: 'VC10294', 
+    customerName: 'Trần Thị B',
     vaccine: 'Vaccine Phế cầu (Bỉ)', 
     location: 'VaxCenter Quận 7', 
     date: '2024-04-15', 
     session: 'Chiều (13:30 - 17:30)',
     status: 'pending',
     statusLabel: 'Chờ xác nhận',
-    createdAt: '2024-03-03'
+    createdAt: '2024-03-03',
+    postVaccinationNotes: ''
   },
   { 
     id: 'VC09123', 
+    customerName: 'Lê Văn C',
     vaccine: 'Vaccine HPV (Mỹ)', 
     location: 'VaxCenter Quận 1', 
     date: '2024-02-10', 
@@ -33,21 +43,52 @@ const appointments = ref([
     status: 'completed',
     statusLabel: 'Đã hoàn thành',
     confirmedBy: 'BS. Đặng Thu Thảo',
-    createdAt: '2024-01-20'
+    createdAt: '2024-01-20',
+    postVaccinationNotes: 'Sức khỏe ổn định, không có phản ứng bất thường sau 30 phút theo dõi.'
   }
 ])
 
 const selectedAppointment = ref(null)
 const showModal = ref(false)
+const editStatus = ref('')
+const postNotes = ref('')
 
 const openDetails = (apt) => {
   selectedAppointment.value = apt
+  editStatus.value = apt.status
+  postNotes.value = apt.postVaccinationNotes || ''
   showModal.value = true
 }
 
 const closeModal = () => {
   showModal.value = false
   selectedAppointment.value = null
+}
+
+const updateStatus = () => {
+  if (!selectedAppointment.value) return
+  
+  const index = appointments.value.findIndex(a => a.id === selectedAppointment.value.id)
+  if (index !== -1) {
+    const newStatus = editStatus.value
+    let label = ''
+    switch(newStatus) {
+      case 'pending': label = 'Chờ xác nhận'; break;
+      case 'confirmed': label = 'Đã xác nhận'; break;
+      case 'completed': label = 'Đã hoàn thành'; break;
+      case 'cancelled': label = 'Đã hủy'; break;
+    }
+    
+    appointments.value[index] = {
+      ...appointments.value[index],
+      status: newStatus,
+      statusLabel: label,
+      postVaccinationNotes: postNotes.value,
+      confirmedBy: (newStatus === 'completed' || newStatus === 'confirmed') ? (appointments.value[index].confirmedBy || authStore.user?.name || 'Nhân viên hệ thống') : appointments.value[index].confirmedBy
+    }
+    alert('Cập nhật trạng thái thành công!')
+    closeModal()
+  }
 }
 
 const getStatusClass = (status) => {
@@ -124,13 +165,41 @@ const getStatusClass = (status) => {
               {{ selectedAppointment.statusLabel }}
             </span>
             <p class="appointment-id-large">Mã số: {{ selectedAppointment.id }}</p>
+            <p v-if="isStaff" class="customer-name-tag">Khách hàng: <strong>{{ selectedAppointment.customerName }}</strong></p>
           </div>
 
           <div class="detail-grid">
+            <!-- Staff Update Form -->
+            <div v-if="isStaff" class="staff-update-form">
+              <div class="form-group">
+                <label>Cập nhật trạng thái</label>
+                <select v-model="editStatus" class="status-select">
+                  <option value="pending">Chờ xác nhận</option>
+                  <option value="confirmed">Đã xác nhận</option>
+                  <option value="completed">Đã hoàn thành</option>
+                  <option value="cancelled">Đã hủy</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Mô tả sau tiêm (Dành cho khách hàng)</label>
+                <textarea 
+                  v-model="postNotes" 
+                  placeholder="Nhập tình trạng sức khỏe sau tiêm, dặn dò..."
+                  class="notes-textarea"
+                ></textarea>
+              </div>
+            </div>
+
             <div class="detail-item">
               <label>Vaccine</label>
               <p>{{ selectedAppointment.vaccine }}</p>
             </div>
+            
+            <div v-if="selectedAppointment.postVaccinationNotes && !isStaff" class="detail-item post-notes-box">
+              <label>📌 Mô tả sau tiêm</label>
+              <p class="post-notes-content">{{ selectedAppointment.postVaccinationNotes }}</p>
+            </div>
+
             <div class="detail-item">
               <label>Địa điểm tiêm</label>
               <p>{{ selectedAppointment.location }}</p>
@@ -142,14 +211,14 @@ const getStatusClass = (status) => {
             
             <!-- Doctor Info: Only show if confirmed or completed -->
             <div class="detail-item doctor-info" v-if="selectedAppointment.confirmedBy">
-              <label>Bác sĩ xác nhận</label>
+              <label>Bác sĩ/Nhân viên xác nhận</label>
               <div class="doctor-badge">
                 <span class="doctor-icon">👨‍⚕️</span>
                 <p class="doctor-name">{{ selectedAppointment.confirmedBy }}</p>
               </div>
             </div>
 
-            <div class="detail-item" v-if="selectedAppointment.status === 'pending'">
+            <div class="detail-item" v-if="selectedAppointment.status === 'pending' && !isStaff">
               <label>Ghi chú</label>
               <p class="note">Lịch hẹn của bạn đang được hệ thống xử lý. Vui lòng đợi thông báo xác nhận từ bác sĩ chuyên môn.</p>
             </div>
@@ -157,6 +226,7 @@ const getStatusClass = (status) => {
         </div>
 
         <div class="modal-footer">
+          <button v-if="isStaff" class="btn-save" @click="updateStatus">Lưu thay đổi</button>
           <button class="btn-primary" @click="closeModal">Đóng</button>
         </div>
       </div>
@@ -413,6 +483,57 @@ const getStatusClass = (status) => {
   font-size: 18px;
 }
 
+.customer-name-tag {
+  margin-top: 8px;
+  color: #137fec;
+}
+
+.staff-update-form {
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 24px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.status-select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-weight: 600;
+}
+
+.notes-textarea {
+  width: 100%;
+  height: 100px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.post-notes-box {
+  background: #fffbeb;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #fef3c7;
+}
+
+.post-notes-content {
+  color: #92400e !important;
+  font-weight: 500;
+}
+
 .detail-grid {
   display: flex;
   flex-direction: column;
@@ -476,6 +597,21 @@ const getStatusClass = (status) => {
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.btn-save {
+  padding: 10px 24px;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 12px;
+}
+
+.btn-save:hover {
+  background: #059669;
 }
 
 /* Empty State */

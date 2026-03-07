@@ -7,10 +7,10 @@ const staffLocation = authStore.user?.workLocation || 'VaxCenter Quận 1'
 
 // Dữ liệu mẫu ban đầu (bao gồm nhiều cơ sở khác nhau)
 const todayAppointments = ref([
-  { id: 1, patient: 'Trần Thị B', vaccine: 'Vaccine HPV', location: 'VaxCenter Quận 1', date: '2026-03-04', time: 'Sáng (08:30)', status: 'Đang chờ', age: 22, gender: 'Nữ', phone: '0901234567', address: 'Quận 1, TP.HCM' },
-  { id: 2, patient: 'Lê Văn C', vaccine: 'Vaccine Cúm', location: 'VaxCenter Quận 7', date: '2026-03-04', time: 'Sáng (09:15)', status: 'Đã xác nhận', age: 35, gender: 'Nam', phone: '0912345678', address: 'Quận 7, TP.HCM' },
-  { id: 3, patient: 'Nguyễn Thị D', vaccine: 'Vaccine Phế cầu', location: 'VaxCenter Quận 1', date: '2026-03-04', time: 'Chiều (14:00)', status: 'Đang chờ', age: 5, gender: 'Nữ', phone: '0988888888', address: 'Quận Bình Thạnh, TP.HCM' },
-  { id: 4, patient: 'Phạm Văn E', vaccine: 'Vaccine 6 trong 1', location: 'VaxCenter Quận 1', date: '2026-03-04', time: 'Chiều (15:30)', status: 'Đang chờ', age: 1, gender: 'Nam', phone: '0977666555', address: 'Quận 1, TP.HCM' }
+  { id: 1, patient: 'Trần Thị B', vaccine: 'Vaccine HPV', location: 'VaxCenter Quận 1', date: '2026-03-04', time: 'Sáng', status: 'Đang chờ', age: 22, gender: 'Nữ', phone: '0901234567', address: 'Quận 1, TP.HCM', postVaccinationStatus: '', postVaccinationNotes: '' },
+  { id: 2, patient: 'Lê Văn C', vaccine: 'Vaccine Cúm', location: 'VaxCenter Quận 7', date: '2026-03-04', time: 'Sáng', status: 'Đã xác nhận', age: 35, gender: 'Nam', phone: '0912345678', address: 'Quận 7, TP.HCM', postVaccinationStatus: '', postVaccinationNotes: '' },
+  { id: 3, patient: 'Nguyễn Thị D', vaccine: 'Vaccine Phế cầu', location: 'VaxCenter Quận 1', date: '2026-03-04', time: 'Chiều', status: 'Đang chờ', age: 5, gender: 'Nữ', phone: '0988888888', address: 'Quận Bình Thạnh, TP.HCM', postVaccinationStatus: '', postVaccinationNotes: '' },
+  { id: 4, patient: 'Phạm Văn E', vaccine: 'Vaccine 6 trong 1', location: 'VaxCenter Quận 1', date: '2026-03-04', time: 'Chiều', status: 'Đang chờ', age: 1, gender: 'Nam', phone: '0977666555', address: 'Quận 1, TP.HCM', postVaccinationStatus: '', postVaccinationNotes: '' }
 ])
 
 // Lọc lịch hẹn trùng với cơ sở của Staff
@@ -37,6 +37,9 @@ const vaccineOptions = [
 // Modal Chi tiết
 const selectedAppointment = ref(null)
 const showDetailModal = ref(false)
+const editStatus = ref('')
+const postVaccinationStatus = ref('')
+const postVaccinationNotes = ref('')
 
 // Modal Tạo mới
 const showCreateModal = ref(false)
@@ -51,7 +54,10 @@ const newRecord = ref({
 })
 
 const openDetails = (apt) => {
-  selectedAppointment.value = apt
+  selectedAppointment.value = { ...apt }
+  editStatus.value = apt.status
+  postVaccinationStatus.value = apt.postVaccinationStatus || 'Bình thường'
+  postVaccinationNotes.value = apt.postVaccinationNotes || ''
   showDetailModal.value = true
 }
 
@@ -93,11 +99,27 @@ const handleCreateRecord = () => {
     time: timeStr,
     status: 'Đã xác nhận',
     phone: 'Chưa cập nhật',
-    address: 'Đăng ký tại quầy'
+    address: 'Đăng ký tại quầy',
+    postVaccinationStatus: '',
+    postVaccinationNotes: ''
   })
 
   alert('Đã tạo phiếu tiêm thành công!')
   showCreateModal.value = false
+}
+
+const handleUpdateAppointment = () => {
+  const index = todayAppointments.value.findIndex(a => a.id === selectedAppointment.value.id)
+  if (index !== -1) {
+    todayAppointments.value[index] = {
+      ...todayAppointments.value[index],
+      status: editStatus.value,
+      postVaccinationStatus: postVaccinationStatus.value,
+      postVaccinationNotes: postVaccinationNotes.value
+    }
+    alert('Cập nhật thông tin tiêm chủng thành công!')
+    closeDetailModal()
+  }
 }
 
 const handleApprove = (id) => {
@@ -178,8 +200,9 @@ const vaccineInventory = [
                 <td>{{ apt.vaccine }}</td>
                 <td>
                   <span :class="['status-tag', 
-                    apt.status === 'Đã xác nhận' ? 'success' : 
+                    apt.status === 'Đã xác nhận' || apt.status === 'Đã hoàn thành' ? 'success' : 
                     apt.status === 'Đang chờ' ? 'warning' : 
+                    apt.status === 'Đã tiêm' ? 'info' :
                     apt.status === 'Đã từ chối' ? 'danger' : '']">
                     {{ apt.status }}
                   </span>
@@ -301,7 +324,7 @@ const vaccineInventory = [
     <div v-if="showDetailModal" class="modal-overlay" @click.self="closeDetailModal">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>Chi tiết lịch hẹn</h2>
+          <h2>Chi tiết lịch hẹn & Cập nhật tiêm chủng</h2>
           <button @click="closeDetailModal" class="close-btn">&times;</button>
         </div>
         <div class="modal-body" v-if="selectedAppointment">
@@ -331,32 +354,47 @@ const vaccineInventory = [
               <p>{{ selectedAppointment.vaccine }}</p>
             </div>
             <div class="detail-item">
-              <label>Cơ sở tiêm:</label>
-              <p>{{ selectedAppointment.location }}</p>
-            </div>
-            <div class="detail-item">
               <label>Ngày tiêm:</label>
               <p>{{ selectedAppointment.date }}</p>
             </div>
-            <div class="detail-item">
-              <label>Ca tiêm:</label>
-              <p>{{ selectedAppointment.time }}</p>
-            </div>
-            <div class="detail-item">
-              <label>Trạng thái:</label>
-              <p>
-                <span :class="['status-tag', 
-                  selectedAppointment.status === 'Đã xác nhận' ? 'success' : 
-                  selectedAppointment.status === 'Đang chờ' ? 'warning' : 
-                  selectedAppointment.status === 'Đã từ chối' ? 'danger' : '']">
-                  {{ selectedAppointment.status }}
-                </span>
-              </p>
+
+            <div class="full-width staff-update-box">
+              <div class="form-section-label">Cập nhật trạng thái tiêm chủng</div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Trạng thái lịch hẹn</label>
+                  <select v-model="editStatus">
+                    <option value="Đang chờ">Đang chờ</option>
+                    <option value="Đã xác nhận">Đã xác nhận</option>
+                    <option value="Đã tiêm">Đã tiêm</option>
+                    <option value="Đã hoàn thành">Đã hoàn thành</option>
+                    <option value="Đã từ chối">Đã từ chối</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Tình trạng sau tiêm</label>
+                  <select v-model="postVaccinationStatus">
+                    <option value="Bình thường">Bình thường</option>
+                    <option value="Phản ứng nhẹ">Phản ứng nhẹ</option>
+                    <option value="Phản ứng mạnh">Phản ứng mạnh (Cần theo dõi)</option>
+                    <option value="Khác">Khác</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group" style="margin-top: 12px;">
+                <label>Ghi chú sau tiêm / Dặn dò</label>
+                <textarea 
+                  v-model="postVaccinationNotes" 
+                  placeholder="Nhập ghi chú chi tiết về tình trạng sức khỏe khách hàng hoặc dặn dò sau tiêm..."
+                  class="notes-textarea"
+                ></textarea>
+              </div>
             </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button @click="closeDetailModal" class="btn btn-secondary">Đóng</button>
+          <button @click="closeDetailModal" class="btn btn-secondary">Hủy</button>
+          <button @click="handleUpdateAppointment" class="btn btn-submit-form">Lưu thay đổi</button>
         </div>
       </div>
     </div>
@@ -505,6 +543,7 @@ const vaccineInventory = [
 .status-tag.success { background: #dcfce7; color: #166534; }
 .status-tag.warning { background: #fef9c3; color: #854d0e; }
 .status-tag.danger { background: #fee2e2; color: #991b1b; }
+.status-tag.info { background: #e0f2fe; color: #075985; }
 
 .action-group {
   display: flex;
@@ -638,6 +677,7 @@ const vaccineInventory = [
   text-transform: uppercase;
   border-bottom: 1px solid #e0f2fe;
   padding-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .form-row {
@@ -666,6 +706,17 @@ const vaccineInventory = [
   border-radius: 8px;
   font-size: 15px;
   background-color: #f8fafc;
+}
+
+.notes-textarea {
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 15px;
+  background-color: #f8fafc;
+  min-height: 100px;
+  resize: vertical;
+  font-family: inherit;
 }
 
 .radio-group {
@@ -706,6 +757,14 @@ const vaccineInventory = [
 
 .full-width {
   grid-column: span 2;
+}
+
+.staff-update-box {
+  background-color: #f8fafc;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  margin-top: 10px;
 }
 
 .modal-footer {
