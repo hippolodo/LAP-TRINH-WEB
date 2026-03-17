@@ -38,4 +38,21 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
+    # Tự động tạo hồ sơ 'Bản thân' trong bảng dependents
+    # Lưu ý: Map giới tính từ User (male/female/other) sang Dependent (Nam/Nữ/Khác)
+    gender_map = {'male': 'Nam', 'female': 'Nữ', 'other': 'Khác'}
+    dependent_gender = gender_map.get(new_user.gender, 'Khác')
+
+    new_dependent = models.Dependent(
+        user_id=new_user.id,
+        full_name=new_user.full_name,
+        dob=new_user.dob,
+        gender=dependent_gender,
+        relation_type='Bản thân',
+        cccd=new_user.cccd
+    )
+    db.add(new_dependent)
+    db.commit()
+
     return new_user

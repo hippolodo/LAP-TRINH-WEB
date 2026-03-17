@@ -31,7 +31,12 @@ class UserUpdate(BaseModel):
     full_name: Optional[str] = None
     email: Optional[EmailStr] = None
     phone: Optional[str] = None
+    cccd: Optional[str] = None
+    dob: Optional[date] = None
+    gender: Optional[Gender] = None
     address: Optional[str] = None
+    role: Optional[Role] = None
+    work_location_id: Optional[int] = None
     password: Optional[str] = None
 
 class User(UserBase):

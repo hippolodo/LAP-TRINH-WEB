@@ -9,6 +9,8 @@ from app.modules.schedules.router import router as schedules_router
 from app.modules.records.router import router as records_router
 from app.modules.auth.register_router import router as register_router
 from app.modules.auth.login_router import router as login_router
+from app.modules.users.router import router as users_router
+from app.modules.dependents.router import router as dependents_router
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -27,6 +29,8 @@ app.add_middleware(
 # Include Routers
 app.include_router(register_router, prefix="/api/register", tags=["Registration"])
 app.include_router(login_router, prefix="/api/login", tags=["Login"])
+app.include_router(users_router, prefix="/api/users", tags=["Users Management"])
+app.include_router(dependents_router, prefix="/api/dependents", tags=["Dependents Management"])
 app.include_router(vaccines_router, prefix="/api/vaccines", tags=["Vaccines"])
 app.include_router(locations_router, prefix="/api/locations", tags=["Locations"])
 app.include_router(appointments_router, prefix="/api/appointments", tags=["Appointments"])

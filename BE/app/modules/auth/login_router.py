@@ -22,7 +22,8 @@ def login(user_credentials: schemas.UserUpdate, db: Session = Depends(get_db)):
             "id": user.id,
             "full_name": user.full_name,
             "email": user.email,
-            "role": user.role
+            "role": user.role,
+            "work_location_id": user.work_location_id
         },
         "access_token": "fake-jwt-token", # Placeholder
         "token_type": "bearer"

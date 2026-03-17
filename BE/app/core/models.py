@@ -20,9 +20,27 @@ class User(Base):
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 
+    dependents = relationship("Dependent", back_populates="user")
     appointments = relationship("Appointment", back_populates="user")
 
-# 2. Locations
+# 2. Dependents (Hồ sơ người tiêm)
+class Dependent(Base):
+    __tablename__ = "dependents"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    full_name = Column(String(100), nullable=False)
+    dob = Column(Date, nullable=False)
+    gender = Column(Enum('Nam', 'Nữ', 'Khác'), nullable=False)
+    # Đổi tên từ relationship thành relation_type để tránh trùng với hàm relationship() của SQLAlchemy
+    relation_type = Column("relationship", String(50), nullable=False) 
+    cccd = Column(String(20), nullable=True)
+    created_at = Column(TIMESTAMP, server_default=func.now())
+
+    user = relationship("User", back_populates="dependents")
+    appointments = relationship("Appointment", back_populates="dependent")
+    records = relationship("VaccinationRecord", back_populates="dependent")
+
+# 3. Locations
 class Location(Base):
     __tablename__ = "locations"
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -35,7 +53,7 @@ class Location(Base):
     appointments = relationship("Appointment", back_populates="location")
     schedules = relationship("Schedule", back_populates="location")
 
-# 3. Vaccines
+# 4. Vaccines
 class Vaccine(Base):
     __tablename__ = "vaccines"
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -49,7 +67,7 @@ class Vaccine(Base):
     inventory = relationship("Inventory", back_populates="vaccine")
     appointments = relationship("Appointment", back_populates="vaccine")
 
-# 4. Inventory
+# 5. Inventory
 class Inventory(Base):
     __tablename__ = "inventory"
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -62,7 +80,7 @@ class Inventory(Base):
     vaccine = relationship("Vaccine", back_populates="inventory")
     location = relationship("Location", back_populates="inventory")
 
-# 5. Schedules (Mới cập nhật)
+# 6. Schedules
 class Schedule(Base):
     __tablename__ = "schedules"
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -76,11 +94,12 @@ class Schedule(Base):
     location = relationship("Location", back_populates="schedules")
     appointments = relationship("Appointment", back_populates="schedule")
 
-# 6. Appointments
+# 7. Appointments
 class Appointment(Base):
     __tablename__ = "appointments"
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    dependent_id = Column(Integer, ForeignKey("dependents.id"), nullable=True)
     patient_name = Column(String(100), nullable=False)
     patient_age = Column(Integer, nullable=False)
     patient_gender = Column(Enum('Nam', 'Nữ', 'Khác'), nullable=False)
@@ -94,15 +113,17 @@ class Appointment(Base):
     created_at = Column(TIMESTAMP, server_default=func.now())
 
     user = relationship("User", back_populates="appointments")
+    dependent = relationship("Dependent", back_populates="appointments")
     vaccine = relationship("Vaccine", back_populates="appointments")
     location = relationship("Location", back_populates="appointments")
     schedule = relationship("Schedule", back_populates="appointments")
 
-# 7. Vaccination Records
+# 8. Vaccination Records
 class VaccinationRecord(Base):
     __tablename__ = "vaccination_records"
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    dependent_id = Column(Integer, ForeignKey("dependents.id"), nullable=True)
     appointment_id = Column(Integer, unique=True)
     vaccine_id = Column(Integer, ForeignKey("vaccines.id"), nullable=False)
     location_id = Column(Integer, ForeignKey("locations.id"), nullable=False)
@@ -113,5 +134,6 @@ class VaccinationRecord(Base):
     reactions = Column(Text)
     notes = Column(Text)
 
+    dependent = relationship("Dependent", back_populates="records")
     vaccine = relationship("Vaccine")
     location = relationship("Location")
